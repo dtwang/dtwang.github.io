@@ -1,0 +1,873 @@
+<!-- 
+  // *****************************************
+  // HTML for KKLabs' Tainan Anping Game
+  // Author: SybiL
+  // *****************************************
+ -->
+
+ <!DOCTYPE html>
+<html>
+<head>
+	<!-- Standard Meta -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	
+	<!-- Mobile App Meta-->
+  	<meta name="apple-mobile-web-app-capable" content="yes"/>
+  	<meta name="mobile-web-app-capable" content="yes">
+  	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+	<!-- Site Properities -->
+	<title>VR Snake Demo</title>
+
+	<!-- Style Sheet: semantic-UI and plugins-->
+	<!--<link rel="stylesheet" type="text/css" href="dist/semantic.min.css">-->
+
+	<!-- Fonts  -->
+	
+
+	<!-- Javascript Lib: semantic-UI and jQuery and plugins -->
+	<script type="text/javascript" src="jquery-2.1.0.min.js"></script>
+	<!--<script src="dist/semantic.min.js"></script>-->
+
+	<!-- Javascript Lib: kklabs and ibeacon -->
+	<!-- <script src="scripts/spot_jsbelib.js"></script>-->
+	<script src="viaduct_essential_lib.js"></script>
+	
+	<script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
+	<!--<script src="aframe.min.js"></script>-->
+
+	<script src="jquery.qrcode-0.7.0.min.js"></script>
+
+	<style>
+		.desktopPanelBg
+		{
+			position: absolute;
+			right: 20px;
+			bottom: 20px;
+			z-index: 99;
+			width: 250px;
+			height: 60vh;
+			background: #fff;
+			opacity: 0.76;
+			display: block;
+		}
+
+		.desktopPanelArea
+		{
+			position: absolute;
+			right: 20px;
+			bottom: 20px;
+			z-index: 99;
+			width: 250px;
+			height: 60vh;
+			opacity: 1;
+			display: block;
+		}
+
+		.desktopPanelInner
+		{
+			position: static;
+			padding: 10px;
+
+			display: block;
+		}
+
+		#qrcodeArea
+		{
+			background: #fff;
+			padding: 30px;
+			width: 100px;
+			height: 100px;
+		}
+
+	</style>
+
+	
+	<script>
+
+		var clientMode=0; // 0: mobile device , 1: desktop 
+		var gameStatus=0; // 0: not start yet , 1: playing , 2: ended
+		var seesionKey="";
+
+		var mapSize=15;
+		var snakeMoveSpeed=900;
+		var snakeAniSpeed=300;
+		var snakeUnitAniSpeed=80;
+		var floorColor="#89C35C";
+		var eatCounter=0;
+		var gameScore=0;
+
+		function generateFloors(x,y)
+		{
+			var gridSize=2;
+			for(i=0;i<x;i++)
+			{
+				for(j=0;j<y;j++)
+				{
+					// add one floor
+
+					var calcX= ((x-1)/2-x+i+1)*gridSize;
+					var calcZ= ((y-1)/2-y+j+1)*gridSize;
+					//console.log("grid="+calcX+","+calcZ);
+					var outHtml='<a-plane color="'+floorColor+'" height="1.9" width="1.9" position="'+calcX+' 0  '+calcZ+'" rotation="-90 0 0" id="floor-'+i+'-'+j+'"  onmouseenter="clickFloor1('+i+','+j+')" onmouseleave="clickFloor2('+i+','+j+')" class="floors"></a-plane>';
+
+					$("a-scene").append(outHtml);
+				}
+			}
+		}
+
+		// onclick="clickFloor('+i+','+j+')"
+
+
+		function clickFloor(x,y)
+		{
+			if(clientMode==1)
+				return;
+			console.log("clickFloor="+x+","+y);
+
+			//$("#floor-"+x+"-"+y).attr("color","red");
+			//$(".floors").attr("color","gray");
+
+			// check if valid turn 
+
+			var isTriggerTurn=false;
+
+			console.log("snakePosition.direction old="+snakePosition.direction);
+			if(snakePosition.direction=="W" && (y==getSnakeHead().y || y==getSnakeHead().y+1) )
+			{	
+				if( x <= getSnakeHead().x-1 )
+				{
+					isTriggerTurn=true;
+					snakePosition.direction="A";
+
+				}
+				else if ( x >= getSnakeHead().x+1 )
+				{
+					isTriggerTurn=true;
+					snakePosition.direction="D";
+				}
+			}
+			else if(snakePosition.direction=="S"  && (y==getSnakeHead().y || y==getSnakeHead().y-1) )
+			{	
+				if( x <= getSnakeHead().x-1 )
+				{
+					isTriggerTurn=true;
+					snakePosition.direction="A";
+
+				}
+				else if ( x >= getSnakeHead().x+1 )
+				{
+					isTriggerTurn=true;
+					snakePosition.direction="D";
+				}
+			}
+			else if(snakePosition.direction=="A"  && (x==getSnakeHead().x || x==getSnakeHead().x+1) )
+			{	
+				
+				if( y <= getSnakeHead().y-1 )
+				{
+					isTriggerTurn=true;
+					snakePosition.direction="W";
+
+				}
+				else if ( y >= getSnakeHead().y+1  )
+				{
+					isTriggerTurn=true;
+					snakePosition.direction="S";
+				}
+			}
+			else if(snakePosition.direction=="D"  && (x==getSnakeHead().x || x==getSnakeHead().x-1) )
+			{	
+				
+				if( y <= getSnakeHead().y-1  )
+				{
+					isTriggerTurn=true;
+					snakePosition.direction="W";
+
+				}
+				else if ( y >= getSnakeHead().y+1 )
+				{
+					isTriggerTurn=true;
+					snakePosition.direction="S";
+				}
+			}	
+
+			if(isTriggerTurn)
+				$("#floor-"+x+"-"+y).attr("color","red");
+			console.log("snakePosition.direction new="+snakePosition.direction);
+
+		}
+
+		var timerOutClickArea=null;
+		function clickFloor1(x,y)
+		{
+			if(clientMode==1)
+				return;
+			//console.log("clickFloor1="+x+","+y);
+
+			$("#floor-"+x+"-"+y).attr("color","#7FE817");
+
+			if(timerOutClickArea!=null)
+				clearTimeout(timerOutClickArea);
+
+			timerOutClickArea=setTimeout(function(){
+				clickFloor(x,y);
+
+			},300);
+		}
+
+		function clickFloor2(x,y)
+		{
+			if(clientMode==1)
+				return;
+			//console.log("clickFloor2="+x+","+y);
+
+			$(".floors").attr("color",floorColor);
+
+			if(timerOutClickArea!=null)
+				clearTimeout(timerOutClickArea);
+		}
+
+		/*
+		var mapArray=[ [ 1 , 1 , 1 , 1,  1, 1, 1 ,1 ,1 ,1 ,1 ,1 ,1, 1, 1], 
+						[ 1 , 0 , 0 , 0,  0, 0, 0 ,0 ,0 ,0 ,0 ,0 ,0,  0, 1], 
+						[ 1 , 0 , 0 , 0,  0, 0, 0 ,0 ,0 ,0 ,0 ,0 ,0,  0, 1], 
+						[ 1 , 0 , 0 , 0,  0, 0, 0 ,0 ,0 ,0 ,0 ,10 ,0,  0, 1],  
+						[ 1 , 0 , 0 , 0,  0, 0, 0 ,0 ,0 ,0 ,0 ,0 ,0,  0, 1],  
+						[ 1 , 0 , 0 , 0,  0, 0, 0 ,0 ,0 ,0 ,0 ,0 ,0,  0, 1], 
+						[ 1 , 0 , 0 , 0,  0, 0, 0 ,0 ,0 ,0 ,0 ,0 ,0,  0, 1],  
+						[ 1 , 0 , 0 , 0,  0, 0, 0 ,0 ,0 ,0 ,0 ,0 ,0,  0, 1], 
+						[ 1 , 0 , 0 , 0,  0, 0, 0 ,0 ,0 ,0 ,0 ,0 ,0,  0, 1],
+						[ 1 , 0 , 0 , 0,  0, 0, 0 ,0 ,0 ,0 ,0 ,0 ,0 , 0, 1],
+						[ 1 , 0 , 0 , 0,  0, 0, 0 ,0 ,0 ,0 ,0 ,0 ,0,  0, 1],
+						[ 1 , 0 , 0 , 0,  0, 0, 0 ,0 ,0 ,0 ,0 ,0 ,0,  0, 1],
+						[ 1 , 0 , 0 , 0,  0, 0, 0 ,0 ,0 ,0 ,0 ,0 ,0,  0, 1],
+						[ 1 , 0 , 0 , 0,  0, 0, 0 ,0 ,0 ,0 ,0 ,0 ,0,  0, 1],
+						[ 1 , 1 , 1 , 1,  1, 1, 1 ,1 ,1 ,1 ,1 ,1 ,1, 1, 1]
+					  ]
+		*/
+		var mapArray=[];
+
+		function initMap(x,y)
+		{
+			mapArray=[];
+
+			for(i=0;i<x;i++)
+			{
+				mapArray.push([]);
+				for(j=0;j<y;j++)
+				{
+					if(i==0 || i==x-1)
+						mapArray[i].push(1);
+					else if(j==0 || j==y-1)
+						mapArray[i].push(1);
+					else
+						mapArray[i].push(0);
+				}
+			}
+
+		}
+
+		function showGameOver()
+		{
+			$("a-scene .wallBlock").attr("color","black");
+
+			gameStatus=2;
+
+			setTimeout(function(){
+
+				reStartGame();
+
+			},5000);
+		}
+
+		function reStartGame()
+		{
+			snakeMoveSpeed=900;
+		    snakeAniSpeed=300;
+		    snakeUnitAniSpeed=80;
+
+		    eatCounter=0;
+		    gameScore=0;
+
+		    gameStatus=1;
+
+			initMap(mapSize,mapSize);
+
+			initSnake(5,6,5);
+
+			updateSnakeDataOnMap();
+
+			generateFloorsFood(mapSize);
+
+			showBoxBaseOnArray(mapSize,mapSize,0);
+
+			moveCamera(mapSize,mapSize, getSnakeHead2().x, getSnakeHead2().y);
+			
+
+			setTimeout( function() {
+
+				nextStepSnake()
+					
+
+				},snakeMoveSpeed+5000);
+
+	  	
+		}
+
+		function showBoxBaseOnArray(x,y, updateType) // type:0 - all , type:1 partial
+		{
+			var gridSize=2;
+
+			if(updateType==0)
+			{
+				$("a-scene .wallBlock").remove();
+				$("a-scene .objBlock").remove();
+			}
+			else if(updateType==1)
+				$("a-scene .objBlock").remove();
+
+			for(i=0;i<x;i++)
+			{
+				for(j=0;j<y;j++)
+				{
+					// add one floor
+
+					var calcX= ((x-1)/2-x+i+1)*gridSize;
+					var calcZ= ((y-1)/2-y+j+1)*gridSize;
+
+					if(mapArray[j][i]==1 && updateType==0  )
+					{
+						//console.log("grid="+calcX+","+calcZ);
+						var outHtml;
+
+						if( j % 2 ==1)
+							outHtml='<a-box color="orange" depth="1.75" height="1.75" width="1.75" position="'+calcX+' 1.2  '+calcZ+'" class="wallBlock"></a-box>';
+						else if( i % 2 ==1)
+							outHtml='<a-box color="orange" depth="1.75" height="1.75" width="1.75" position="'+calcX+' 1.2  '+calcZ+'" class="wallBlock"></a-box>';
+						else 
+							outHtml='<a-box color="tomato" depth="1.75" height="1.75" width="1.75" position="'+calcX+' 1.2  '+calcZ+'" class="wallBlock"></a-box>';
+						 
+
+
+						$("a-scene").append(outHtml);
+					}
+					else if(mapArray[j][i]==2)
+					{
+						//console.log("grid="+calcX+","+calcZ);
+						var outHtml;
+
+						outHtml='<a-box color="#52D017" depth="1.75" height="1.75" width="1.75" position="'+calcX+' 1.2  '+calcZ+'" class="objBlock" id="snakeBody-'+i+'-'+j+'"></a-box>';
+
+						$("a-scene").append(outHtml);
+				    }
+				    else if(mapArray[j][i]==3)
+					{
+						//console.log("grid="+calcX+","+calcZ);
+						var outHtml;
+
+
+						outHtml='<a-box color="#347C17" depth="1.75" height="1.75" width="1.75" position="'+calcX+' 1.2  '+calcZ+'" class="objBlock" id="snakeBody-'+i+'-'+j+'"></a-box>';
+
+
+						$("a-scene").append(outHtml);
+				    }
+				    else  if(mapArray[j][i]==10 )
+					{
+						//console.log("grid="+calcX+","+calcZ);
+						var outHtml='<a-box color="pink" depth="0.75" height="0.75" width="0.75" position="'+calcX+' 1.2  '+calcZ+'" class="objBlock"  onclick="clickFloor('+i+','+j+')" >';	
+						var outHtml=outHtml+' <a-animation attribute="rotation"  dur="1000"   fill="forwards"   to="0 360 360"  repeat="indefinite"></a-animation>';
+               			var outHtml=outHtml+'</a-box>';	
+
+						$("a-scene").append(outHtml);
+					}
+				}
+			}
+		}
+
+		function moveCamera(w, h, x,y)
+		{
+			var gridSize=2;
+
+			var cameraShift=0.25;
+			if(snakePosition.direction=="W")
+			{
+				y = y+cameraShift;
+			}
+			else if(snakePosition.direction=="S")
+			{
+				y = y-cameraShift;
+			}
+			
+			else if(snakePosition.direction=="A")
+			{
+				x = x+cameraShift;
+			}
+			else if(snakePosition.direction=="D")
+			{
+				x = x-cameraShift;
+			}
+			
+			var calcX= ((w-1)/2-w+x+1)*gridSize;
+			var calcZ= ((h-1)/2-h+y+1)*gridSize;
+
+			$("#mainCamera a-animation").remove();
+
+			var animationHtml = ' <a-animation attribute="position"  dur="'+snakeAniSpeed+'"  to="'+calcX+' 3.8  '+calcZ+'"  repeat="0"></a-animation>';
+
+			$("#mainCamera").append(animationHtml);
+
+			//$("#mainCamera").attr("position",calcX+" 4 "+calcZ)
+		}
+
+
+		function moveCameraTop()
+		{
+
+			var animationHtml = ' <a-animation attribute="position"  dur="2000"  to="0 15 20"  repeat="0"></a-animation>';
+			$("#mainCamera").append(animationHtml);
+
+			animationHtml = ' <a-animation attribute="rotation"  begin="500" dur="1500" to="-40 0 0"  repeat="0"></a-animation>';
+			$("#mainCamera").append(animationHtml);
+
+			//$("#mainCamera").attr("position",calcX+" 4 "+calcZ)
+		}
+
+		var snakePosition={};
+
+		function initSnake(x, y, snake_len)
+		{
+			snakePosition = {bodyQueues:[], direction: "W"}; // W A D S 
+
+			for(var i=0;i<snake_len;i++)
+			{
+				snakePosition.bodyQueues.push([x,y+(snake_len-i-1)]);
+				mapArray[y+(snake_len-i-1)][x]=2;
+
+			}
+		}
+
+		function getSnakeHead()
+		{
+			var r={x:0, y:0}
+
+			r.x=snakePosition.bodyQueues[snakePosition.bodyQueues.length-1][0];
+			r.y=snakePosition.bodyQueues[snakePosition.bodyQueues.length-1][1];
+
+			return r;
+
+		}
+
+		function getSnakeHead2()
+		{
+			var r={x:0, y:0}
+
+			r.x=snakePosition.bodyQueues[snakePosition.bodyQueues.length-2][0];
+			r.y=snakePosition.bodyQueues[snakePosition.bodyQueues.length-2][1];
+
+			return r;
+
+		}
+
+		function updateSnakeDataOnMap()
+		{
+			if(clientMode==1)
+				return;
+
+			for(i=0;i<mapSize;i++)
+			{
+				for(j=0;j<mapSize;j++)
+				{
+
+					if(mapArray[j][i]==2 || mapArray[j][i]==3)
+					{
+						// in mobile mode, determine head or not
+						if(getSnakeHead().x ==i && getSnakeHead().y==j)
+						{
+							mapArray[j][i]=3;
+						}
+						else
+						{
+							mapArray[j][i]=2;
+						}
+					}	
+				}
+			}
+		}
+
+		function moveSnake()
+		{
+			var newHeadPostion=[0,0];
+
+			if(snakePosition.direction=="W")
+			{
+				newHeadPostion[0]=snakePosition.bodyQueues[snakePosition.bodyQueues.length-1][0];
+				newHeadPostion[1]=snakePosition.bodyQueues[snakePosition.bodyQueues.length-1][1]-1;
+			}
+			else if(snakePosition.direction=="A")
+			{
+				newHeadPostion[0]=snakePosition.bodyQueues[snakePosition.bodyQueues.length-1][0]-1;
+				newHeadPostion[1]=snakePosition.bodyQueues[snakePosition.bodyQueues.length-1][1];
+			}
+			else if(snakePosition.direction=="D")
+			{
+				newHeadPostion[0]=snakePosition.bodyQueues[snakePosition.bodyQueues.length-1][0]+1;
+				newHeadPostion[1]=snakePosition.bodyQueues[snakePosition.bodyQueues.length-1][1];
+			}
+			else if(snakePosition.direction=="S")
+			{
+				newHeadPostion[0]=snakePosition.bodyQueues[snakePosition.bodyQueues.length-1][0];
+				newHeadPostion[1]=snakePosition.bodyQueues[snakePosition.bodyQueues.length-1][1]+1;
+			}
+
+			//console.dir(newHeadPostion);
+			// detect clash
+			if(mapArray[newHeadPostion[1]][newHeadPostion[0]]==1 || mapArray[newHeadPostion[1]][newHeadPostion[0]]==2)
+				return false;
+
+			// detect eat
+			if(mapArray[newHeadPostion[1]][newHeadPostion[0]]==10)
+			{
+				console.log("eat!");
+
+				eatCounter++;
+
+				// push to bodyQueues and screen
+				snakePosition.bodyQueues.push(newHeadPostion);
+				mapArray[newHeadPostion[1]][newHeadPostion[0]]=2;
+
+				addBlockMoveAnimation(1);
+				// generate new one;
+				generateFloorsFood(mapSize);
+
+				updateSnakeDataOnMap();
+
+				if(eatCounter<=3)
+				{
+					gameScore = gameScore+1;
+
+				}
+				else if(eatCounter<=9)
+				{
+					gameScore = gameScore+3;
+
+				}
+				else if(eatCounter<=12)
+				{
+					gameScore = gameScore+6;
+
+				}
+				else
+				{
+					gameScore = gameScore+9;
+				}
+
+
+				if(eatCounter==3)
+				{
+					snakeMoveSpeed = snakeMoveSpeed-350;
+					snakeUnitAniSpeed=30;
+				}
+				else if(eatCounter==6)
+				{
+					snakeMoveSpeed = snakeMoveSpeed-350;
+					snakeUnitAniSpeed=10;
+				
+				}
+				else if(eatCounter==12)
+				{
+					snakeMoveSpeed = snakeMoveSpeed-50;
+					snakeUnitAniSpeed=8;
+				}
+			}
+			else
+			{
+
+				// push to bodyQueues and screen
+				snakePosition.bodyQueues.push(newHeadPostion);
+				mapArray[newHeadPostion[1]][newHeadPostion[0]]=2;
+
+				addBlockMoveAnimation(0);
+				// shift tail from bodyQueues and screen
+				mapArray[ snakePosition.bodyQueues[0][1] ][ snakePosition.bodyQueues[0][0] ]=0;
+				snakePosition.bodyQueues.shift();
+
+				updateSnakeDataOnMap();
+			}
+
+			return true;
+
+		}
+
+		function showQRCode()
+		{
+			$("body").append("<div class='desktopPanelBg'></div>");
+
+			var outHtml="<div class='desktopPanelArea'><div class='desktopPanelInner'>";
+
+			outHtml= outHtml+"<h4>Snake VR</h4>"
+
+			outHtml= outHtml+"<div id='qrcodeArea' width='100' height='100'></div>";
+
+			outHtml= outHtml+"<div id='topScore'><h2> <span></span> </h2></div>";
+
+			outHtml= outHtml+"</div></div>";
+			$("body").append(outHtml);
+
+			$("#qrcodeArea").qrcode({
+                      size: 100,
+                      color: '#000',
+                      text: "https://event.spot.ms/vrsnake/?s="+seesionKey
+                    });
+		}
+
+		function sendCurrentGameStatus()
+		{
+			if(seesionKey=="")
+				return;
+			
+			var data={};
+			data.eatCounter = eatCounter;
+			data.gameScore = gameScore;
+			data.mapArray = mapArray;
+			data.seesionKey = seesionKey;
+			data.gameStatus = gameStatus;
+
+			$.ajax({
+	            type: "POST",
+	            timeout: 500,
+	            url: '/common/updateSnakeGameSession',
+	            data:  { rawdata:data},
+	            success: function (msg) 
+                { 
+                   // console.log("updateSnakeGameSession success");
+                },
+	            error: function (err)
+	            { 
+
+	            }
+	        });
+
+			
+		}
+
+		function addBlockMoveAnimation(type)
+		{
+			var gridSize=2;
+
+
+			for(var i=0;i<snakePosition.bodyQueues.length-1;i++)
+			{
+				var x = snakePosition.bodyQueues[i+1][0];
+				var y = snakePosition.bodyQueues[i+1][1];
+
+				var calcX= ((mapSize-1)/2-mapSize+x+1)*gridSize;
+				var calcZ= ((mapSize-1)/2-mapSize+y+1)*gridSize;
+
+				var animationHtml = ' <a-animation attribute="position"  dur="'+snakeAniSpeed+'"  begin="'+((snakePosition.bodyQueues.length-i)*snakeUnitAniSpeed)+'" to="'+calcX+' 1.2  '+calcZ+'"  repeat="0"></a-animation>';
+				$("#snakeBody-"+snakePosition.bodyQueues[i][0]+"-"+snakePosition.bodyQueues[i][1]).append(animationHtml);
+			}
+
+			if(type==1)
+			{
+				// add one more to tail
+
+				var x = snakePosition.bodyQueues[0][0];
+				var y = snakePosition.bodyQueues[0][1];
+
+				var calcX= ((mapSize-1)/2-mapSize+x+1)*gridSize;
+				var calcZ= ((mapSize-1)/2-mapSize+y+1)*gridSize;
+
+				var outHtml='<a-box color="#52D017" depth="1.75" height="1.75" width="1.75" position="'+calcX+' 1.2  '+calcZ+'" class="objBlock" id="snakeBody-'+x+'-'+y+'"></a-box>';
+
+				$("a-scene").append(outHtml);
+
+			}
+
+		}
+
+		function generateFloorsFood(mapSize)
+		{
+				var isSuccessGenScore=false;
+				var newX=0;
+				var newY=0;
+
+				while(isSuccessGenScore==false)
+				{
+					newX = Math.round(Math.random()*(mapSize-6)) + 3;
+					newY = Math.round(Math.random()*(mapSize-6)) + 3;
+
+					if(mapArray[newY][newX]!=2 && mapArray[newY][newX]!=3 && mapArray[newY][newX]!=1 )
+						isSuccessGenScore=true;
+				}
+
+				console.log("food="+newX+" "+newY);
+
+				mapArray[newY][newX]=10;
+		}
+
+		function nextStepSnake()
+		{
+				var successMove = moveSnake();
+				
+				sendCurrentGameStatus();
+
+				setTimeout(function(){
+					moveCamera(mapSize,mapSize, getSnakeHead2().x, getSnakeHead2().y);
+				},snakeAniSpeed/3);
+
+				setTimeout(function(){
+
+					showBoxBaseOnArray(mapSize,mapSize,1);
+
+					
+					if(successMove)
+						setTimeout(nextStepSnake,snakeMoveSpeed);
+					else
+					   showGameOver();
+
+				},snakeAniSpeed+snakePosition.bodyQueues.length*snakeUnitAniSpeed);
+				
+		}
+
+		function nextReadSnake()
+		{
+		
+			$.ajax({
+	            type: "GET",
+	            url: '/common/getSnakeGameSession?id='+seesionKey,
+	            success: function (data) 
+                { 
+                   //console.log("getSnakeGameSession success="+JSON.stringify(data));
+
+                    if(data.hasOwnProperty("mapArray"))
+                    {
+						eatCounter = data.eatCounter ;
+						mapArray = data.mapArray;
+						gameStatus = data.gameStatus;
+                   		gameScore = data.gameScore;
+
+						$("#topScore span").html(gameScore);
+                  	 	showBoxBaseOnArray(mapSize,mapSize,1);
+                   	}
+
+                   setTimeout(nextReadSnake,snakeMoveSpeed/3);
+
+                },
+	            error: function (err)
+	            { 
+	            	setTimeout(nextReadSnake,snakeMoveSpeed/3);
+	            }
+	        });
+		}
+
+
+	</script>
+</head>
+
+<body>
+	<a-scene>
+
+	  
+
+	  <a-sky color="#73F7DD"></a-sky>
+
+	  <!--
+	  <a-entity light="type: directional; color: #F00; intensity: 1.3" position="-1 1 0"></a-entity>
+	  <a-entity light="type: directional; color: #00F; intensity: 1.3" position="1 -1 0"></a-entity>
+		-->
+
+		<a-entity light="type: point; intensity: 0.75; distance: 30; decay: 5"
+          position="0 5 -14"></a-entity>
+
+        <a-entity light="type: point; intensity: 0.75; distance: 30; decay: 5"
+          position="0 5 14"></a-entity>
+
+        <a-entity light="type: point; intensity: 0.75; distance: 30; decay: 5"
+          position="-14 5 0"></a-entity>
+
+         <a-entity light="type: point; intensity: 0.75; distance: 30; decay: 5"
+          position="14 5 0"></a-entity>
+
+		   <a-entity light="type: ambient; color: #CCC"></a-entity> 
+
+		   <a-entity position="0 2 5" id="mainCamera">
+		     <a-camera>
+
+		     	 <a-cursor color="#2E3A87"  ></a-cursor >
+				
+
+				<!--
+				<a-entity cursor="fuse: true; timeout: 500"
+				        position="0 0 -5"
+			            geometry="primitive: ring"
+			            material="color: #2E3A8; shader: flat"
+			            raycaster="far: 200; interval: 100" >
+			    </a-entity>
+				-->
+
+		     </a-camera>
+		   </a-entity>
+
+	</a-scene>
+
+	<script>
+	
+	  $(window).load( function() {
+		/*
+		  window.console = {
+	        log   : function(){},
+	        dir   : function(){},
+	        info  : function(){},
+	        error : function(){},
+	        warn  : function(){}
+	      };
+		*/
+
+	      if(1==-1 && navigator.userAgent.search('Android')==-1 && navigator.userAgent.search('iPhone')==-1 && navigator.userAgent.search('iPad')==-1 && viaductEssentailAPI.getURLParameter("simu")!="true")
+	      {
+	      	clientMode=1;
+	      	seesionKey = viaductEssentailAPI.makeId(32);
+
+	      }
+	      else
+	      {
+	      	clientMode=0;
+	      	seesionKey = viaductEssentailAPI.getURLParameter("s");
+
+	      	if(seesionKey=="null")
+	      		seesionKey="";
+	      }
+
+	      
+
+		  generateFloors(mapSize,mapSize);
+		
+		  if(clientMode==0) // mobile 
+		    reStartGame();
+		  else
+		  {
+		  	 
+
+		  	 initMap(mapSize,mapSize);
+			 showBoxBaseOnArray(mapSize,mapSize,0);
+			 moveCameraTop();
+
+			 showQRCode();
+
+			 $(".a-enter-vr").hide();
+
+			 nextReadSnake();
+
+		  }
+
+	 });
+
+		
+
+
+	</script>
+
+</body>
+</html>
