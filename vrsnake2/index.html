@@ -412,11 +412,16 @@
 			var calcX= ((w-1)/2-w+x+1)*gridSize;
 			var calcZ= ((h-1)/2-h+y+1)*gridSize;
 
-			$("#mainCamera a-animation").remove();
+			//$("#mainCamera a-animation").remove();
 
-			var animationHtml = ' <a-animation attribute="position"  dur="'+snakeAniSpeed+'"  to="'+calcX+' 3.8  '+calcZ+'"  repeat="0"></a-animation>';
+			// animation="property: position; to: 1 8 -10; dur: 2000; easing: linear; loop: true"
+			$("#mainCamera").attr("animation","");
 
-			$("#mainCamera").append(animationHtml);
+			//var animationHtml = ' <a-animation attribute="position"  dur="'+snakeAniSpeed+'"  to="'+calcX+' 3.8  '+calcZ+'"  repeat="0"></a-animation>';
+			var animationHtml = ' property:position; to:'+calcX+' 3.8 '+calcZ+';dur:'+snakeAniSpeed+'  easing: linear; loop: false';
+
+			$("#mainCamera").attr("animation",animationHtml);
+			//$("#mainCamera").append(animationHtml);
 
 			//$("#mainCamera").attr("position",calcX+" 4 "+calcZ)
 		}
@@ -810,9 +815,10 @@
 		     </a-camera>
 		   </a-entity>
 
+		   <!---
 		   <a-entity oculus-touch-controls="hand: left"></a-entity>
 		   <a-entity oculus-touch-controls="hand: right"></a-entity>
-		   
+		-->
 	</a-scene>
 
 	<script>
