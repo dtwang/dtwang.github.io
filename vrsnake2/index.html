@@ -91,7 +91,7 @@
 		var seesionKey="";
 
 		var mapSize=15;
-		var snakeMoveSpeed=900;
+		var snakeMoveSpeed=800;
 		var snakeAniSpeed=300;
 		var snakeUnitAniSpeed=80;
 		var floorColor="#89C35C";
@@ -569,18 +569,18 @@
 				}
 
 
-				if(eatCounter==3)
+				if(eatCounter==2)
 				{
 					snakeMoveSpeed = snakeMoveSpeed-350;
 					snakeUnitAniSpeed=30;
 				}
-				else if(eatCounter==6)
+				else if(eatCounter==4)
 				{
 					snakeMoveSpeed = snakeMoveSpeed-350;
 					snakeUnitAniSpeed=10;
 				
 				}
-				else if(eatCounter==12)
+				else if(eatCounter==5)
 				{
 					snakeMoveSpeed = snakeMoveSpeed-50;
 					snakeUnitAniSpeed=8;
