@@ -103,7 +103,7 @@
 					var calcX= ((x-1)/2-x+i+1)*gridSize;
 					var calcZ= ((y-1)/2-y+j+1)*gridSize;
 					//console.log("grid="+calcX+","+calcZ);
-					var outHtml='<a-plane color="'+floorColor+'" height="1.9" width="1.9" position="'+calcX+' 0  '+calcZ+'" rotation="-90 0 0" id="floor-'+i+'-'+j+'"  onmouseenter="clickFloor1('+i+','+j+')" onmouseleave="clickFloor2('+i+','+j+')" class="floors"></a-plane>';
+					var outHtml='<a-plane color="'+floorColor+'" height="1.9" width="1.9" position="'+calcX+' 0  '+calcZ+'" rotation="-90 0 0" id="floor-'+i+'-'+j+'" shadow="receive: true" onmouseenter="clickFloor1('+i+','+j+')" onmouseleave="clickFloor2('+i+','+j+')" class="floors"></a-plane>';
 
 					$("a-scene").append(outHtml);
 				}
