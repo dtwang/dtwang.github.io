@@ -1,7 +1,7 @@
 <!-- 
   // *****************************************
-  // HTML for A-Frame Demo
-  // Author: Geoffrey Wang
+  // HTML for KKLabs' Tainan Anping Game
+  // Author: SybiL
   // *****************************************
  -->
 
@@ -20,13 +20,22 @@
 	<!-- Site Properities -->
 	<title>VR Snake Demo</title>
 
-	<!-- Javascript Lib:-->
-	<script type="text/javascript" src="jquery-2.1.0.min.js"></script>
+	<!-- Style Sheet: semantic-UI and plugins-->
+	<!--<link rel="stylesheet" type="text/css" href="dist/semantic.min.css">-->
 
-	<!-- Javascript Lib:-->
+	<!-- Fonts  -->
+	
+
+	<!-- Javascript Lib: semantic-UI and jQuery and plugins -->
+	<script type="text/javascript" src="jquery-2.1.0.min.js"></script>
+	<!--<script src="dist/semantic.min.js"></script>-->
+
+	<!-- Javascript Lib: kklabs and ibeacon -->
+	<!-- <script src="scripts/spot_jsbelib.js"></script>-->
 	<script src="viaduct_essential_lib.js"></script>
 	
 	<script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
+	<!--<script src="aframe.min.js"></script>-->
 
 	<script src="jquery.qrcode-0.7.0.min.js"></script>
 
@@ -765,7 +774,14 @@
 <body>
 	<a-scene>
 
+	
+
 	  <a-sky color="#73F7DD"></a-sky>
+
+	  <!--
+	  <a-entity light="type: directional; color: #F00; intensity: 1.3" position="-1 1 0"></a-entity>
+	  <a-entity light="type: directional; color: #00F; intensity: 1.3" position="1 -1 0"></a-entity>
+		-->
 
 		<a-entity light="type: point; intensity: 0.75; distance: 30; decay: 5"
           position="0 5 -14"></a-entity>
@@ -785,10 +801,24 @@
 		     <a-camera>
 
 		     	 <a-cursor color="#2E3A87"  ></a-cursor >
+				
+
+				<!--
+				<a-entity cursor="fuse: true; timeout: 500"
+				        position="0 0 -5"
+			            geometry="primitive: ring"
+			            material="color: #2E3A8; shader: flat"
+			            raycaster="far: 200; interval: 100" >
+			    </a-entity>
+				-->
 
 		     </a-camera>
 		   </a-entity>
 
+		   <!---
+		   <a-entity oculus-touch-controls="hand: left"></a-entity>
+		   <a-entity oculus-touch-controls="hand: right"></a-entity>
+		-->
 	</a-scene>
 
 	<script>
@@ -804,15 +834,43 @@
 	      };
 		*/
 
-		clientMode=0;
-		seesionKey = viaductEssentailAPI.getURLParameter("s");
+	      if(1==-1 && navigator.userAgent.search('Android')==-1 && navigator.userAgent.search('iPhone')==-1 && navigator.userAgent.search('iPad')==-1 && viaductEssentailAPI.getURLParameter("simu")!="true")
+	      {
+	      	clientMode=1;
+	      	seesionKey = viaductEssentailAPI.makeId(32);
 
-		if(seesionKey=="null")
-			seesionKey="";
+	      }
+	      else
+	      {
+	      	clientMode=0;
+	      	seesionKey = viaductEssentailAPI.getURLParameter("s");
+
+	      	if(seesionKey=="null")
+	      		seesionKey="";
+	      }
+
+	      
 
 		  generateFloors(mapSize,mapSize);
 		
-		  reStartGame();
+		  if(clientMode==0) // mobile 
+		    reStartGame();
+		  else
+		  {
+		  	 
+
+		  	 initMap(mapSize,mapSize);
+			 showBoxBaseOnArray(mapSize,mapSize,0);
+			 moveCameraTop();
+
+			 showQRCode();
+
+			 $(".a-enter-vr").hide();
+
+			 nextReadSnake();
+
+		  }
+
 	 });
 
 		
