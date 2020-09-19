@@ -79,7 +79,8 @@
 	
 	<script>
 
-		var ssX=0.5;
+		var ssX=0;
+		var ssY=0;
 
 		var clientMode=0; // 0: mobile device , 1: desktop 
 		var gameStatus=0; // 0: not start yet , 1: playing , 2: ended
@@ -375,11 +376,13 @@
 						//var outHtml=outHtml+' <a-animation attribute="rotation"  dur="1000"   fill="forwards"   to="0 360 360"  repeat="indefinite"></a-animation>';
                			//var outHtml=outHtml+'</a-box>';	
 
-						var outHtml='<a-entity gltf-model="url(star.gltf)" animation-mixer="clip: starAction" scale="5 5 5" position="'+(calcX-ssX)+' -1  '+calcZ+'" class="objBlock"  shadow="cast: true" onclick="clickFloor('+i+','+j+')">';	
+						var outHtml='<a-entity gltf-model="url(star.gltf)" animation-mixer="clip: starAction" scale="5 5 5" position="'+(calcX+ssX
+						)+' -1  '+(calcZ+ssY)+'" class="objBlock"  shadow="cast: true" onclick="clickFloor('+i+','+j+')">';	
 						var outHtml=outHtml+' <a-animation attribute="rotation"  dur="1000"   fill="forwards"   to="0 360 360"  repeat="indefinite"></a-animation>';
                			var outHtml=outHtml+'</a-entity>';	
 
-						var outHtml=outHtml+'<a-entity light="type: point; intensity: 0.5; distance: 50; decay: 2;castShadow: true;" position="'+(calcX-ssX)+' 5 '+calcZ+'" class="objBlock"></a-entity>'
+						var outHtml=outHtml+'<a-entity light="type: point; intensity: 0.5; distance: 50; decay: 2;castShadow: true;" position="'+(calcX+ssX
+						)+' 5 '+(calcZ+ssY)+'" class="objBlock"></a-entity>'
 						var outHtml=outHtml+'<a-plane color="pink" height="1.9" width="1.9" position="'+calcX+' 0.1  '+calcZ+'" rotation="-90 0 0" class="objBlock" ></a-plane>';
 
 						$("a-scene").append(outHtml);
@@ -800,7 +803,7 @@
 		     </a-camera>
 		   </a-entity>
 
-		   <a-entity gltf-model="url(scene.gltf)" position="-5 0.5 -20" animation-mixer="clip: cat_armature|walk" scale="0.4 0.4 0.4"></a-entity>
+		   <a-entity gltf-model="url(scene.gltf)" position="-5 0.5 -20" animation-mixer="clip: *" scale="1 1 1"></a-entity>
 
 	</a-scene>
 
