@@ -373,7 +373,7 @@
 						//var outHtml=outHtml+' <a-animation attribute="rotation"  dur="1000"   fill="forwards"   to="0 360 360"  repeat="indefinite"></a-animation>';
                			//var outHtml=outHtml+'</a-box>';	
 
-						var outHtml='<a-entity gltf-model="url(star.gltf)" animation-mixer="clip: starAction" scale="5 5 5" position="'+calcX+' 2  '+calcZ+'" class="objBlock"  onclick="clickFloor('+i+','+j+')">';	
+						var outHtml='<a-entity gltf-model="url(star.gltf)" animation-mixer="clip: starAction" scale="5 5 5" position="'+calcX+' 0.5  '+calcZ+'" class="objBlock"  onclick="clickFloor('+i+','+j+')">';	
 						var outHtml=outHtml+' <a-animation attribute="rotation"  dur="1000"   fill="forwards"   to="0 360 360"  repeat="indefinite"></a-animation>';
                			var outHtml=outHtml+'</a-entity>';	
 
@@ -796,7 +796,7 @@
 		     </a-camera>
 		   </a-entity>
 
-		   <a-entity gltf-model="url(scene.gltf)" position="12 1.2 10" animation-mixer="clip: cat_armature|walk" scale="0.25 0.25 0.25"></a-entity>
+		   <a-entity gltf-model="url(scene.gltf)" position="-5 1.2 -15" animation-mixer="clip: cat_armature|walk" scale="0.25 0.25 0.25"></a-entity>
 
 	</a-scene>
 
